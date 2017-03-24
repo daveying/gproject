@@ -1,0 +1,7 @@
+/home/aimm/gproject/build/CMakeFiles/clean_test_results.dir
+/home/aimm/gproject/build/CMakeFiles/download_extra_data.dir
+/home/aimm/gproject/build/CMakeFiles/doxygen.dir
+/home/aimm/gproject/build/gtest/CMakeFiles/gtest.dir
+/home/aimm/gproject/build/gtest/CMakeFiles/gtest_main.dir
+/home/aimm/gproject/build/CMakeFiles/run_tests.dir
+/home/aimm/gproject/build/CMakeFiles/tests.dir
