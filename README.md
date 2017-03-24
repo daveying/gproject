@@ -27,7 +27,7 @@ sh display.sh
 ```
 to check the effect. You will see this if everything is alright.
 
-![aimm description effect](https://github.com/daveying/gproject/tree/master/doc/pic/aimm_description_effect.png)
+![aimm description effect](https://raw.githubusercontent.com/daveying/gproject/master/doc/pic/aimm_description_effect.png)
 
 - aimm\_moveit\_config
 
