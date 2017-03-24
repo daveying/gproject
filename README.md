@@ -12,7 +12,27 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 
 # Package dependences
 
-- [ur\_modern\_driver](https://github.com/ThomasTimm/ur_modern_driver) : src/ur\_modern\_driver
+- [ur\_modern\_driver](https://github.com/ThomasTimm/ur_modern_driver) : [src/ur\_modern\_driver](https://github.com/daveying/gproject/tree/master/src/ur_modern_driver)
+
+# Package description
+
+- aimm_description
+
+Description files for mobile manipulator. Source files are here: [src/aimm_description]()
+  
+Test this package by `cd` to `src/aimm_description/` and using command:
+  
+```bash
+sh display.sh
+```
+to check the effect. You will see this if everything is alright.
+
+![aimm description effect](https://github.com/daveying/gproject/tree/master/doc/pic/aimm_description_effect.png)
+
+- aimm\_moveit\_config
+
+  MoveIt! config package for mobile manipulator
+  
 
 # How to control
 
