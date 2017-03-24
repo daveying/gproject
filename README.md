@@ -16,7 +16,7 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 
 # Package description
 
-- aimm_description
+### aimm_description
 
 Description files for mobile manipulator. Source files are here: [src/aimm_description]()
   
@@ -25,11 +25,11 @@ Test this package by `cd` to `src/aimm_description/` and using command:
 ```bash
 sh display.sh
 ```
-to check the effect. You will see this if everything is alright.
+You will see the effect like below if everything is alright.
 
 ![aimm description effect](https://raw.githubusercontent.com/daveying/gproject/master/doc/pic/aimm_description_effect.png)
 
-- aimm\_moveit\_config
+### aimm\_moveit\_config
 
   MoveIt! config package for mobile manipulator
   
