@@ -7,7 +7,7 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 
 # Environment
 
-- ubuntu 14.04
+- Ubuntu 14.04
 - ROS Indigo
 
 # Package dependences
