@@ -12,5 +12,16 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 
 # Package dependences
 
-- [ur\_modern\_dirver](https://github.com/ThomasTimm/ur_modern_driver)
+- [ur\_modern\_driver](https://github.com/ThomasTimm/ur_modern_driver) : src/ur\_modern\_driver
+
+# How to control
+
+## Create urdf file for mobile manipulator
+
+TODO
+
+## Create [MoveIt!](http://moveit.ros.org/) config package for mobile manipulator
+
+TODO
+
 
