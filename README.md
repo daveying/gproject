@@ -16,7 +16,7 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 Source at src/ur\_modern\_driver
 
 - [hokuyo_node](http://wiki.ros.org/hokuyo_node),
-You can install `hokuyo_node` via command line:
+You can install hokuyo_node via command line:
 ```bash
 sudo apt-get install ros-indigo-hokuyo-node
 ```
@@ -25,7 +25,7 @@ This is a node from [scan_tools](http://wiki.ros.org/scan_tools?distro=indigo), 
 
 # Package description
 
-### aimm_description
+## aimm_description
 
 Description files for mobile manipulator. Source files are here: [src/aimm_description]()
   
@@ -38,10 +38,16 @@ You will see the effect like below if everything is alright.
 
 ![aimm description effect](https://raw.githubusercontent.com/daveying/gproject/master/doc/pic/aimm_description_effect.png)
 
-### aimm\_moveit\_config
+## aimm\_moveit\_config
 
-  MoveIt! config package for mobile manipulator
+MoveIt! config package for mobile manipulator
   
+## laser_scan_matcher
+
+Launch this module with a custom launch file:
+```bash
+roslaunch laser_scan_matcher localization.launch
+```
 
 # How to control
 
