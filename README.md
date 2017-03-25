@@ -12,7 +12,15 @@ My goal is to acheive movement control of manipulator and mobile base simultaneo
 
 # Package dependences
 
-- [ur\_modern\_driver](https://github.com/ThomasTimm/ur_modern_driver) : [src/ur\_modern\_driver](https://github.com/daveying/gproject/tree/master/src/ur_modern_driver)
+- [ur\_modern\_driver](https://github.com/ThomasTimm/ur_modern_driver)
+Source at src/ur\_modern\_driver
+
+- [hokuyo_node](http://wiki.ros.org/hokuyo_node) 
+You can install `hokuyo_node` via command line:
+```bash
+sudo apt-get install ros-indigo-hokuyo-node
+```
+
 
 # Package description
 
