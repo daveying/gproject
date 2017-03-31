@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_planning_interface
   roscpp
-  roscpp
+  rospy
   sensor_msgs
   tf
   trajectory_msgs
@@ -144,6 +144,28 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+## Declare a C++ executable
+add_executable(pure_vel_ctrl src/pure_vel_ctrl.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(pure_vel_ctrl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(pure_vel_ctrl
+   ${catkin_LIBRARIES}
+)
+## Declare a C++ executable
+add_executable(draw_circle src/draw_circle.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(draw_circle  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(draw_circle 
+   ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

@@ -1,0 +1,9 @@
+roscore
+
+rosrun hokuyo_node hokuyo_node
+
+roslaunch aimm_moveit_config aimm_moveit_planning_execution.launch robot_ip:=192.168.2.102
+
+roslaunch laser_scan_matcher localization.launch
+
+

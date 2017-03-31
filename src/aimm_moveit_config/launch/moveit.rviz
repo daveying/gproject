@@ -61,6 +61,7 @@ Visualization Manager:
           Z: 2
       Name: MotionPlanning
       Planned Path:
+        Color Enabled: false
         Interrupt Display: false
         Links:
           All Links Enabled: true
@@ -163,6 +164,7 @@ Visualization Manager:
             Value: true
         Loop Animation: false
         Robot Alpha: 0.5
+        Robot Color: 150; 50; 150
         Show Robot Collision: false
         Show Robot Visual: true
         Show Trail: false
@@ -182,7 +184,7 @@ Visualization Manager:
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
         Planning Group: manipulator
-        Query Goal State: true
+        Query Goal State: false
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 0.5
@@ -414,10 +416,10 @@ Visualization Manager:
         Z: 2.23518e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.614797
+      Pitch: 0.774797
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 3.05991
+      Yaw: 2.22991
     Saved: ~
 Window Geometry:
   Displays:
@@ -433,5 +435,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1828
-  X: 82
+  X: 72
   Y: 14

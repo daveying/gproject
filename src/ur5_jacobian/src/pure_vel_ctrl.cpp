@@ -11,6 +11,8 @@ using namespace std;
 //========================global variables declare==============================//
 //store recieved joint velocity values
 vector<double> joint_speeds;
+//store recieved time stamp of joint velocity msg
+std_msgs::Header header;
 
 //store recieved joint angle values
 vector<double> joint_values;
@@ -40,7 +42,7 @@ void fillZeros(vector<double> &vec, int length);
 void initContainers();
 
 //copy values from vector src to vector dist, number of values is defined by paramenter `length`
-void copyValues(vector<double> &src, vector<double> &dist, int length);
+void copyValues(const vector<double> &src, vector<double> &dist, int length);
 
 //callback function of ros subscriber sub_joint_states
 //copy the joint angle values and joint velocity values 
@@ -74,11 +76,89 @@ int main(int argc, char **argv)
     robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
     robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
     ROS_INFO("Model frame(base_frame): %s", kinematic_model->getModelFrame().c_str());
-    
+    //create a robot_state object, we can set it to any configuration and then calculate the jacobian matrix coreesponding to this configuration
     robot_state::RobotStatePtr kinematic_state(new robot_state::RobotState(kinematic_model));
     kinematic_state->setToDefaultValues();
     const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("manipulator");
     const vector<string> &joint_names = joint_model_group->getJointModelNames();
+    
+    /* print out joint names
+    for(int i = 0; i < joint_names.size(); i++)
+    {
+        ROS_INFO("%d joint_name: %s", i, joint_names[i].c_str());
+    }*/
+    
+    //create matrixes for jacobian acquiring and joint speed calculation
+    Eigen::Vector3d reference_point_position(0.0, 0.0, 0.0); //respect to specified frame: last frame of `manipulator` group
+    Eigen::MatrixXd jacobian; // for jacobian acquiring
+    Eigen::MatrixXd joint_velocities(6, 1);
+    Eigen::MatrixXd joint_ctrl_velocities(6, 1);
+    Eigen::MatrixXd tcp_velocities(6, 1);
+    Eigen::MatrixXd platform_velocities(6, 1);
+    
+    //TODO: figure out what is this
+    geometry_msgs::TwistStamped tcp_msg;
+    //msg to ur_modern_driver
+    trajectory_msgs::JointTrajectory trj;
+    trajectory_msgs::JointTrajectoryPoint trjp;
+    fillZeros(trjp.velocities, 6);
+    trj.points.push_back(trjp);
+    
+    while(ros::ok())
+    {
+        if(mouse_data_come || joint_data_come)
+        {
+            mouse_data_come = false; joint_data_come = false;
+            
+            //set robot configuration
+            kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
+            //get jacobian of this configuration
+            kinematic_state->getJacobian(joint_model_group, kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()), reference_point_position, jacobian);
+            ROS_INFO_STREAM("Jacobian: \n" << jacobian);
+            
+            for (int i = 0; i < joint_speeds.size(); i++)
+            {
+                joint_velocities(i, 0) = joint_speeds[i];
+            }
+            
+            // calculate tcp velocities for debug
+            tcp_velocities = jacobian * joint_velocities;
+            ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities);
+            // msg for debug
+            tcp_msg.header = header;
+            tcp_msg.twist.linear.x = tcp_velocities(0, 0);
+            tcp_msg.twist.linear.y = tcp_velocities(1, 0);
+            tcp_msg.twist.linear.z = tcp_velocities(2, 0);
+            tcp_msg.twist.angular.x = tcp_velocities(3, 0);
+            tcp_msg.twist.angular.y = tcp_velocities(4, 0);
+            tcp_msg.twist.angular.z = tcp_velocities(5, 0);
+            pub_tcp_speed.publish(tcp_msg);
+            
+            double k = 1;
+            platform_velocities(0, 0) = k * mouse_speeds[0];
+            platform_velocities(1, 0) = k * mouse_speeds[1];
+            platform_velocities(2, 0) = 0;
+            platform_velocities(3, 0) = 0;
+            platform_velocities(4, 0) = 0;
+            platform_velocities(5, 0) = 0;
+            
+            //TODO: calculate tcp compensate velocities according to platform velocities
+            // calculate desired joint velocity according to tcp compensate velocity
+            joint_ctrl_velocities = jacobian.inverse() * platform_velocities;
+            // fill the desired joint velocity to msg, which will be sent to ur_modern_driver module
+			trj.points[0].velocities[0] = joint_ctrl_velocities(0,0);
+			trj.points[0].velocities[1] = joint_ctrl_velocities(1,0);
+			trj.points[0].velocities[2] = joint_ctrl_velocities(2,0);
+			trj.points[0].velocities[3] = joint_ctrl_velocities(3,0);
+			trj.points[0].velocities[4] = joint_ctrl_velocities(4,0);
+			trj.points[0].velocities[5] = joint_ctrl_velocities(5,0);
+            
+        }
+        trj.header.stamp = ros::Time::now();
+        pub_joint_speed.publish(trj);
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 }
 
 
@@ -94,11 +174,11 @@ void fillZeros(vector<double> &vec, int length)
 {
     for(int i = 0; i < length; i++)
     {
-        vec.push_back(0);
+        vec.push_back(0.0);
     }
 }
 
-void copyValues(vector<double> &src, vector<double> &dist, int length)
+void copyValues(const vector<double> &src, vector<double> &dist, int length)
 {
     for(int i = 0; i < length; i++)
     {
@@ -112,14 +192,15 @@ void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
     {
         copyValues(msg->velocity, joint_speeds, 6);
         copyValues(msg->position, joint_values, 6);
+        header = msg->header;
         joint_data_come = true;
     }
 }
 
 void mouseSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
-    mouse_speeds[0] = msg->twist.angular.x;
-    mouse_speeds[1] = msg->twist.angular.y;
+    mouse_speeds[0] = msg->twist.linear.x;
+    mouse_speeds[1] = msg->twist.linear.y;
     mouse_speeds[2] = 0;
     mouse_data_come = true;
 }
