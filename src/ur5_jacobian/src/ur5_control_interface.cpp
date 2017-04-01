@@ -18,7 +18,6 @@
  *
  * # run this node
  * $ rosrun ur5_jacobian ur_control_interface
- *
  */
 
 
@@ -74,7 +73,7 @@ void desiredSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
 int main(int argc, char **argv)
 {
     joint_values.resize(6, 0);
-    ros::init(argc, argv, "pure_vel_ctrl");
+    ros::init(argc, argv, "ur5_control_interface");
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
     ros::AsyncSpinner spinner(1);

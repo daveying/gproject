@@ -177,6 +177,18 @@ add_dependencies(ur5_control_interface  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${ca
 target_link_libraries(ur5_control_interface 
    ${catkin_LIBRARIES}
 )
+
+## Declare a C++ executable
+add_executable(publish_path src/publish_path.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(publish_path  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(publish_path 
+   ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

@@ -1,3 +1,15 @@
+/**
+ * # Description
+ *   Publish tcp velocities which can let tcp draw a circle
+ * 
+ * # To run this node, first run
+ * $ rosrun ur5_jacobian ur5_control_interface.cpp
+ *
+ * # Run this node with
+ * $ rosrun ur5_jacobian draw_circle
+ */
+
+
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 
@@ -7,7 +19,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
     
-    ros::Publisher pub_vel = n.advertise<geometry_msgs::TwistStamped>("/platform_speeds", 1000);
+    ros::Publisher pub_vel = n.advertise<geometry_msgs::TwistStamped>("/desired_speeds", 1000);
     
     ros::Time begin_t = ros::Time::now();
     double v_ampli = 0.04; //unit m/s. amplitude of velocity
