@@ -67,11 +67,17 @@ int main(int argc, char **argv)
         if(  (current.toSec() - begin_t.toSec() >= path[index - 1].header.stamp.toSec())   &&   index < path.size())
         {
             transform.setOrigin(tf::Vector3(path[index].pose.position.x, path[index].pose.position.y, path[index].pose.position.z));
-            vel_msg.twist.linear.x = -path[index].pose.position.y;
-            vel_msg.twist.linear.y = path[index].pose.position.x;
+            vel_msg.twist.linear.x = -(path[index].pose.position.y - circle_centor.y);
+            vel_msg.twist.linear.y = path[index].pose.position.x - circle_centor.x;
             normalize(vel_msg.twist.linear, v_ampli);
             index++;
         }
+        if(index >= path.size() - 1 || index <= 2) // index already increased by 1
+        {
+            vel_msg.twist.linear.x = 0;
+            vel_msg.twist.linear.y = 0;
+        }
+        vel_msg.header.stamp = ros::Time::now();
         pub_path_vel.publish(vel_msg);
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_link", "goal"));
         rate.sleep();
