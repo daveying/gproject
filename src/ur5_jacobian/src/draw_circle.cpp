@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Rate loop_rate(100);
     
-    ros::Publisher pub_vel = n.advertise<geometry_msgs::TwistStamped>("/mouse_speeds", 1000);
+    ros::Publisher pub_vel = n.advertise<geometry_msgs::TwistStamped>("/platform_speeds", 1000);
     
     ros::Time begin_t = ros::Time::now();
     double v_ampli = 0.04; //unit m/s. amplitude of velocity

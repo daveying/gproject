@@ -1,3 +1,29 @@
+/**
+ * # Description
+ *   Keep tcp steady when platform is moving. 
+ *   
+ * # Topic in
+ *   /joint_states(sensor_msgs/JointState) from robot
+ *   /platform_speeds(geometry_msgs/TwistStamped) from platform
+ *
+ * # Topic out
+ *   /tcp_velocities(geometry_msgs/TwistStamped) for diagnose
+ *   /ur_driver/joint_speed(trajectory_msgs/JointTrajectory) desired joint speed to robot
+ *
+ * # To run this node, first run
+ * $ roscore
+ * $ rosrun hokuyo_node hokuyo_node
+ * $ roslaunch aimm_moveit_config aimm_moveit_planning_execution.launch robot_ip:=192.168.2.102
+ * $ roslaunch laser_scan_matcher localization.launch
+ *
+ * # run this node
+ * $ rosrun ur5_jacobian pure_vel_ctrl
+ *
+ * # get platform velocity and send to this node
+ * $ rosrun get_velocity get_velocity.py
+ */
+
+
 #include <ros/ros.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_model/robot_model.h>
@@ -17,16 +43,16 @@ std_msgs::Header header;
 //store recieved joint angle values
 vector<double> joint_values;
 
-//store recieved mouse motion data, 
-//mouse_speeds[0] is x direction velocity
-vector<double> mouse_speeds;
+//store recieved platform motion data, 
+//platform_speeds[0] is x direction velocity
+vector<double> platform_speeds;
 
 bool joint_data_come = false;
-bool mouse_data_come = false;
+bool platform_data_come = false;
 
 //subscribe the /joint_states from ur_modern_driver module
 ros::Subscriber sub_joint_states;
-//subscribe the /mouse_speeds from mouse motion capture module
+//subscribe the /platform_speeds from platform motion capture module
 ros::Subscriber sub_platform_speed;
 //publish calculated joint speed to ur_modern_driver module
 ros::Publisher pub_joint_speed;
@@ -51,9 +77,9 @@ void copyValues(const vector<double> &src, vector<double> &dist, int length);
 void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg);
 
 //callback function of ros subscriber sub_platform_speed
-//copy the mouse speed from msg to vector mouse_speeds
-//and set flag mouse_data_come to be true
-void mouseSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
+//copy the platform speed from msg to vector platform_speeds
+//and set flag platform_data_come to be true
+void platformSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
 
 //===============================main logic======================================//
 
@@ -67,7 +93,7 @@ int main(int argc, char **argv)
     spinner.start();
     
     sub_joint_states = n.subscribe("/joint_states", 1000, jointStateCallback);
-    sub_platform_speed = n.subscribe("/mouse_speeds", 1000, mouseSpeedsCallback);
+    sub_platform_speed = n.subscribe("/platform_speeds", 1000, platformSpeedsCallback);
     
     pub_tcp_speed = n.advertise<geometry_msgs::TwistStamped>("/tcp_velocities", 1000);
     pub_joint_speed = n.advertise<trajectory_msgs::JointTrajectory>("/ur_driver/joint_speed", 1000);
@@ -106,9 +132,9 @@ int main(int argc, char **argv)
     
     while(ros::ok())
     {
-        if(mouse_data_come || joint_data_come)
+        if(platform_data_come || joint_data_come)
         {
-            mouse_data_come = false; joint_data_come = false;
+            platform_data_come = false; joint_data_come = false;
             
             //set robot configuration
             kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
@@ -123,7 +149,7 @@ int main(int argc, char **argv)
             
             // calculate tcp velocities for debug
             tcp_velocities = jacobian * joint_velocities;
-            ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities);
+            ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities.transpose());
             // msg for debug
             tcp_msg.header = header;
             tcp_msg.twist.linear.x = tcp_velocities(0, 0);
@@ -135,8 +161,8 @@ int main(int argc, char **argv)
             pub_tcp_speed.publish(tcp_msg);
             
             double k = 1;
-            platform_velocities(0, 0) = k * mouse_speeds[0];
-            platform_velocities(1, 0) = k * mouse_speeds[1];
+            platform_velocities(0, 0) = k * platform_speeds[1];
+            platform_velocities(1, 0) = -k * platform_speeds[0]; //performed coordinates transform
             platform_velocities(2, 0) = 0;
             platform_velocities(3, 0) = 0;
             platform_velocities(4, 0) = 0;
@@ -167,7 +193,7 @@ void initContainers()
 {
     fillZeros(joint_speeds, 6);
     fillZeros(joint_values, 6);
-    fillZeros(mouse_speeds, 3);
+    fillZeros(platform_speeds, 3);
 }
 
 void fillZeros(vector<double> &vec, int length)
@@ -197,12 +223,12 @@ void jointStateCallback(const sensor_msgs::JointState::ConstPtr& msg)
     }
 }
 
-void mouseSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+void platformSpeedsCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
-    mouse_speeds[0] = msg->twist.linear.x;
-    mouse_speeds[1] = msg->twist.linear.y;
-    mouse_speeds[2] = 0;
-    mouse_data_come = true;
+    platform_speeds[0] = msg->twist.linear.x;
+    platform_speeds[1] = msg->twist.linear.y;
+    platform_speeds[2] = msg->twist.angular.z;
+    platform_data_come = true;
 }
 
 

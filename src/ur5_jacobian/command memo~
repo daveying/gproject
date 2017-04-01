@@ -6,4 +6,6 @@ roslaunch aimm_moveit_config aimm_moveit_planning_execution.launch robot_ip:=192
 
 roslaunch laser_scan_matcher localization.launch
 
+rosrun ur5_jacobian pure_vel_ctrl
 
+rosrun ur5_jacobian draw_circle
