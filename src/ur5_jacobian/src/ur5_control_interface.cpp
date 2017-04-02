@@ -7,7 +7,7 @@
  *   /desired_speeds(geometry_msgs/TwistStamped) control command from other nodes
  *
  * # Topic out
- *   /tcp_velocities(geometry_msgs/TwistStamped) for diagnose
+ *   /tcp_velocities(geometry_msgs/TwistStamped) tcp velocities respect to /ur_base_link for diagnose
  *   /ur_driver/joint_speed(trajectory_msgs/JointTrajectory) desired joint speed to robot
  *
  * # Broadcasted tf
@@ -35,6 +35,8 @@
 #include "tf/transform_broadcaster.h"
 
 using namespace std;
+
+const double pi = 3.1415926;
 
 //========================global variables declare==============================//
 //store recieved joint velocity values
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
     tf::TransformBroadcaster br;
     tf::Transform transform;
     tf::Quaternion orien;
-    orien.setRPY(0, 0, 0);
+    orien.setRPY(pi / 2, -pi / 2, 0);
     transform.setRotation(orien);
     transform.setOrigin(tf::Vector3(reference_point_position(0), reference_point_position(1), reference_point_position(2)));
     
@@ -141,13 +143,13 @@ int main(int argc, char **argv)
             kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
             //get jacobian of this configuration
             kinematic_state->getJacobian(joint_model_group, kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()), reference_point_position, jacobian);
-            ROS_INFO_STREAM("Jacobian: \n" << jacobian);
-            ROS_INFO("Last link name: %s\n", ((kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()))->getName()).c_str());
+            //ROS_INFO_STREAM("Jacobian: \n" << jacobian);
+            //ROS_INFO("Last link name: %s\n", ((kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()))->getName()).c_str());
             
             
             // calculate tcp velocities for debug
             tcp_velocities = jacobian * joint_velocities;
-            ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities.transpose());
+            //ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities.transpose());
             // msg for debug
             tcp_msg.header = header;
             tcp_msg.twist.linear.x = tcp_velocities(0, 0);

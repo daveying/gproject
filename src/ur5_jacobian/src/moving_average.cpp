@@ -33,10 +33,10 @@ Eigen::MatrixXd MovingAverage::out()
     {
         sum += container[i];
     }
-    return sum / length;
+    return sum / len;
 }
 
-
+/*
 int main(int argc, char **argv)
 {
     Eigen::MatrixXd a(2, 1);
@@ -53,5 +53,5 @@ int main(int argc, char **argv)
     cout << test.out() << endl;
     test.in(a);
     cout << test.out() << endl;
-}
+}*/
 
