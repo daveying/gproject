@@ -1,17 +1,18 @@
 #include "vector"
+#include "ros/ros.h"
+#include <Eigen/Dense> 
 using namespace std;
-
 class MovingAverage
 {
 public:
     MovingAverage(int length);
     ~MovingAverage(){};
     
-    void in(double item);
-    double out();
+    void in(Eigen::MatrixXd item);
+    Eigen::MatrixXd out();
 private:
     int len;
-    vector<double> container;
+    vector<Eigen::MatrixXd> container;
     int index;
 };
 

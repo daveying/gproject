@@ -189,6 +189,17 @@ add_dependencies(publish_path  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 target_link_libraries(publish_path 
    ${catkin_LIBRARIES}
 )
+## Declare a C++ executable
+add_executable(moving_average src/moving_average.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(moving_average  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(moving_average 
+   ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############

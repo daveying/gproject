@@ -10,6 +10,10 @@
  *   /tcp_velocities(geometry_msgs/TwistStamped) for diagnose
  *   /ur_driver/joint_speed(trajectory_msgs/JointTrajectory) desired joint speed to robot
  *
+ * # Broadcasted tf
+ *   Last link frame(which is `wrist_3_link` in ur5 case) to reference frame. reference frame
+ *   is the frame of reference_point_position
+ *
  * # To run this node, first run
  * $ roscore
  * $ rosrun hokuyo_node hokuyo_node
@@ -28,6 +32,7 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include "tf/transform_broadcaster.h"
 
 using namespace std;
 
@@ -116,6 +121,16 @@ int main(int argc, char **argv)
     trjp.velocities.resize(6, 0);
     trj.points.push_back(trjp);
     
+    //reference_point_position is respected to this link
+    ROS_INFO("Last link name: %s\n", joint_model_group->getLinkModelNames().back().c_str()); 
+    //broadcast transform from last link frame to reference frame
+    tf::TransformBroadcaster br;
+    tf::Transform transform;
+    tf::Quaternion orien;
+    orien.setRPY(0, 0, 0);
+    transform.setRotation(orien);
+    transform.setOrigin(tf::Vector3(reference_point_position(0), reference_point_position(1), reference_point_position(2)));
+    
     while(ros::ok())
     {
         if(desired_data_come || joint_data_come)
@@ -127,6 +142,7 @@ int main(int argc, char **argv)
             //get jacobian of this configuration
             kinematic_state->getJacobian(joint_model_group, kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()), reference_point_position, jacobian);
             ROS_INFO_STREAM("Jacobian: \n" << jacobian);
+            ROS_INFO("Last link name: %s\n", ((kinematic_state->getLinkModel(joint_model_group->getLinkModelNames().back()))->getName()).c_str());
             
             
             // calculate tcp velocities for debug
@@ -151,6 +167,7 @@ int main(int argc, char **argv)
             }
             
         }
+        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), joint_model_group->getLinkModelNames().back(), "reference"));
         trj.header.stamp = ros::Time::now();
         pub_joint_speed.publish(trj);
         ros::spinOnce();

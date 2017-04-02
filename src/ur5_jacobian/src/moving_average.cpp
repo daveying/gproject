@@ -10,7 +10,7 @@ MovingAverage::MovingAverage(int length)
     index = 0;
 }
 
-void MovingAverage::in(double item)
+void MovingAverage::in(Eigen::MatrixXd item)
 {
     if(container.size() < len)
     {
@@ -24,10 +24,11 @@ void MovingAverage::in(double item)
     }
 }
 
-double MovingAverage::out()
+Eigen::MatrixXd MovingAverage::out()
 {
     int length = container.size();
-    double sum = 0.0;
+    if(length == 0)throw;
+    Eigen::MatrixXd sum(container[0].rows(), container[0].cols());
     for(int i = 0; i < length; i++)
     {
         sum += container[i];
@@ -35,19 +36,22 @@ double MovingAverage::out()
     return sum / length;
 }
 
-/*
+
 int main(int argc, char **argv)
 {
+    Eigen::MatrixXd a(2, 1);
+    a(0,0) = 5;
     MovingAverage test(4);
-    test.in(5);
+    test.in(a);
     cout << test.out() << endl;
-    test.in(4);
+    a(0,0) = 4;
+    test.in(a);
     cout << test.out() << endl;
-    test.in(4);
+    test.in(a);
     cout << test.out() << endl;
-    test.in(4);
+    test.in(a);
     cout << test.out() << endl;
-    test.in(4);
+    test.in(a);
     cout << test.out() << endl;
 }
-*/
+

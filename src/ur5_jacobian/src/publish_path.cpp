@@ -1,6 +1,14 @@
 /**
  * # Description
- *   Publish a serial of frames and corresponding velocities respect to /world frame
+ *   Publish a serial of frames and corresponding velocities respect to /world frame.
+ *   TODO accept a srv call(or just a topic) to change the position of circle centor.
+ *
+ * # Topic out
+ *   /path_vel(geometry_msgs::TwistStamped) current velocity of goal movement, this will feedforward to arm controller
+ *   /goal_pose(geometry_msgs::PoseStamped) current pose of goal.
+ *
+ * # Broadcasted tf
+ *   /world frame to /goal frame
  *
  * # Run this node with
  * $ rosrun ur5_jacobian publish_path
@@ -26,7 +34,7 @@ int main(int argc, char **argv)
 {
     circle_centor.x = 0.5;
     circle_centor.y = -0.5;
-    circle_centor.z = 0.8;//TODO
+    circle_centor.z = 0.8;//FIXME
     
     
     ros::init(argc, argv, "path_publisher");
@@ -99,7 +107,7 @@ vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_am
     vector<geometry_msgs::PoseStamped> path;
     
     item.header.frame_id = "/world";
-    item.header.stamp = ros::Time(3); //TODO, choose a suitable duration
+    item.header.stamp = ros::Time(3); //FIXME, choose a suitable duration
     item.pose.position.x = circle_centor.x + radius;
     item.pose.position.y = circle_centor.y;
     item.pose.position.z = circle_centor.z + 0.05;
