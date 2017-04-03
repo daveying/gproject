@@ -64,6 +64,7 @@ int main(int argc, char **argv)
     double integral_angle = 0;
     tf::Vector3 t_w_wxyz;
     
+    //double Kp_pose = 4, Ki_pose = 0.0001, Kd_pose = -0.05, Kf_pose = 1, Kpf_pose = -1;
     double Kp_pose = 4, Ki_pose = 0.0001, Kd_pose = -0.05, Kf_pose = 1, Kpf_pose = -1;
     double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0;
     
