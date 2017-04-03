@@ -9,3 +9,21 @@ roslaunch laser_scan_matcher localization.launch
 rosrun ur5_jacobian pure_vel_ctrl
 
 rosrun get_velocity get_velocity.py
+
+
+
+roscore
+
+rosrun hokuyo_node hokuyo_node
+
+roslaunch aimm_moveit_config aimm_moveit_planning_execution.launch robot_ip:=192.168.2.102
+
+roslaunch laser_scan_matcher localization.launch
+
+rosrun ur5_jacobian ur5_control_interface
+
+rosrun get_velocity get_velocity.py
+
+rosrun ur5_jacobian arm_controller
+
+rosrun ur5_jacobian publish_path

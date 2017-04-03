@@ -32,9 +32,9 @@ void normalize(geometry_msgs::Vector3 &src, double len = 1);
 
 int main(int argc, char **argv)
 {
-    circle_centor.x = 0.6;
-    circle_centor.y = -0.5;
-    circle_centor.z = 1.1;//FIXME
+    circle_centor.x = 0.5;
+    circle_centor.y = -0.55;
+    circle_centor.z = 1.045;//FIXME
     
     
     ros::init(argc, argv, "path_publisher");
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     ros::Publisher pub_path_vel = n.advertise<geometry_msgs::TwistStamped>("/path_vel", 1000);
     ros::Publisher pub_pose = n.advertise<geometry_msgs::PoseStamped>("/goal_pose", 1000);
     
-    vector<geometry_msgs::PoseStamped> path = generateCirclePath(0.05, v_ampli, 30);
+    vector<geometry_msgs::PoseStamped> path = generateCirclePath(0.1, v_ampli, 30);
     ROS_INFO("test, %lf", path[0].pose.position.x);
     tf::Transform transform;
     tf::Quaternion orien;
@@ -110,7 +110,7 @@ vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_am
     item.header.stamp = ros::Time(5); //FIXME, choose a suitable duration
     item.pose.position.x = circle_centor.x + radius;
     item.pose.position.y = circle_centor.y;
-    item.pose.position.z = circle_centor.z + 0.05;
+    item.pose.position.z = circle_centor.z + 0.03;
     item.pose.orientation.w = 1;
     item.pose.orientation.x = item.pose.orientation.y = item.pose.orientation.z = 0;
     

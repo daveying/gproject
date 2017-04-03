@@ -2,62 +2,66 @@
 #include <tf/transform_listener.h>
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "geometry_msgs/Twist.h"
-#include <tf/tf.h>
-#include <tf/LinearMath/Matrix3x3.h>
+#include "sensor_msgs/Imu.h"
 
+double acc_x = 0;
+ros::Time last;
+bool s = false;
+double v_x = 0;
+
+void imuCallback(const sensor_msgs::Imu::ConstPtr &msg);
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "getVelocity");
+	ros::init(argc, argv, "getImuVelocity");
 	ros::NodeHandle n;
-	ros::Publisher velocity_pub = n.advertise<geometry_msgs::Twist>("velocity", 1000);
-	tf::TransformListener listener;
-	ros::Rate loop_rate(30);
-	double duration_time = 0.03;
-	int count = 0;
-	geometry_msgs::Twist velocity;
-	double current_x, current_y, last_x, last_y;
-	tf::Matrix3x3 current_m, last_m;
-	while(n.ok())
+	ros::Rate loop_rate(100);
+	
+	ros::Subscriber sub_imu = n.subscribe("/imu/data", 1000, imuCallback);
+	ros::Publisher pub_vel = n.advertise<geometry_msgs::TwistStamped>("/imu_vel", 1000);
+	
+	geometry_msgs::TwistStamped msg;
+	while(ros::ok())
 	{
-		// get TF
-		tf::StampedTransform transform;
-		try{
-		  		listener.lookupTransform("/world", "/base_link",  ros::Time(0), transform);
-			}
-		catch (tf::TransformException ex){
-	  		ROS_ERROR("%s",ex.what());
-	  		ros::Duration(1.0).sleep();
-		}
-		current_x = transform.getOrigin().x();
-		current_y = transform.getOrigin().y();
-		current_m = transform.getBasis();
-		if(count == 0)
-		{
-			count = 1;
-			last_x = current_x;
-			last_y = current_y;
-			last_m = current_m;
-		}
-		else if (count == 1)
-		{
-			velocity.linear.x = (current_x - last_x) / duration_time;
-			velocity.linear.y = (current_y - last_y) / duration_time;
-
-			//angular
-			tfScalar current_yaw, current_pitch, current_roll, last_yaw, last_pitch, last_roll;
-			current_m.getRPY(current_roll, current_pitch, current_yaw);
-			last_m.getRPY(last_roll, last_pitch, last_yaw);
-			velocity.angular.z = (current_roll - last_roll) / duration_time;
-
-			ROS_INFO("Velocity: %f, %f, %f", velocity.linear.x, velocity.linear.y, velocity.angular.z);
-			last_x = current_x;
-			last_y = current_y;
-			last_m = current_m;
-			//publish velocity topic
-			velocity_pub.publish(velocity);
-		}	
-		loop_rate.sleep();
+	    msg.header.stamp = ros::Time::now();
+	    msg.twist.linear.x = v_x;
+	    pub_vel.publish(msg);
+	    ros::spinOnce();
+	    loop_rate.sleep();
 	}
-	return 0;
+	ros::spin();
+	
+
+}
+
+int count = 0;
+
+void imuCallback(const sensor_msgs::Imu::ConstPtr &msg)
+{
+    if(s == false)
+    {
+        acc_x = (msg->linear_acceleration.x) * 9.8 / 0.0245;
+        s = true;
+        last = msg->header.stamp;
+    }
+    else
+    {
+        v_x += ((msg->header.stamp.toSec() - last.toSec()) * acc_x);
+        acc_x = (msg->linear_acceleration.x) * 9.8 / 0.0245;
+        last = msg->header.stamp;
+        if(acc_x < 0.0007*9.8/0.0245 && acc_x > -0.0007*9.8/0.0245)
+        {
+            count++;
+            if(count > 100)
+            {
+                v_x = 0;
+                count = 101;
+            }
+        }
+        else
+            count = 0;
+            
+        ROS_INFO("%d", count);
+        
+    }
 }

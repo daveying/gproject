@@ -8,4 +8,4 @@ roslaunch laser_scan_matcher localization.launch
 
 rosrun ur5_jacobian pure_vel_ctrl
 
-rosrun ur5_jacobian draw_circle
+rosrun get_velocity get_velocity.py

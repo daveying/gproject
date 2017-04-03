@@ -22,6 +22,8 @@
 #include "geometry_msgs/TwistStamped.h"
 #include <Eigen/Dense>
 #include "moving_average.h"
+#include <string>
+using namespace std;
 
 Eigen::MatrixXd path_vel(6, 1);
 
@@ -36,7 +38,7 @@ void movingAvarage(Eigen::MatrixXd &joint_ctrl_velocities, std::vector<double> &
 void integralDiff(Eigen::Vector3d &diff_vector, double shortest_angle, Eigen::Vector3d &integral_vector, double &integral_angle);
 double calcNorm(Eigen::MatrixXd vector);
 double calcNorm(tf::Vector3 vector);
-void updateUB_W(tf::TransformListener &tf_listener, tf::StampedTransform &ub_w_transform);
+void updateTransform(tf::TransformListener &tf_listener, tf::StampedTransform &ub_w_transform, string parent, string child);
 void pathVelCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
 void tcpVelCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
 void platformVelCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);
@@ -49,7 +51,7 @@ int main(int argc, char **argv)
     
     ros::Subscriber sub_path_vel = n.subscribe("/path_vel", 1000, pathVelCallback);
     ros::Subscriber sub_tcp_vel = n.subscribe("/tcp_velocities", 1000, tcpVelCallback);
-    ros::Subscriber sub_platform_vel = n.subscribe("/platform_speeds", 1000, platformVelCallback);
+    ros::Subscriber sub_platform_vel = n.subscribe("/laserplatform_speeds", 1000, platformVelCallback);
     //ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/tcp_desired_vel_arm", 1000);
     ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/desired_speeds", 1000);
     
@@ -62,8 +64,8 @@ int main(int argc, char **argv)
     double integral_angle = 0;
     tf::Vector3 t_w_wxyz;
     
-    double Kp_pose = 2, Ki_pose = 0, Kd_pose = 0, Kf_pose = 1;
-    double Kp_orien = 1.8, Ki_orien = 0, Kd_orien = 0;
+    double Kp_pose = 4, Ki_pose = 0.0001, Kd_pose = -0.05, Kf_pose = 1, Kpf_pose = -1;
+    double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0;
     
     updateDiff(tf_listener, diff_vector, axis, shortest_angle);
     integralDiff(diff_vector, shortest_angle, integral_vector, integral_angle);
@@ -72,23 +74,30 @@ int main(int argc, char **argv)
     tf::Vector3 command_angular_vel;
     
     tf::StampedTransform ub_w_transform;// /ur_base_link respect to /world
+    tf::StampedTransform ref_ub_transform; // /reference respect to /ur_base_link
     
     MovingAverage smoother(8);
     
     while(ros::ok())
     {
-        updateUB_W(tf_listener, ub_w_transform);
+        updateTransform(tf_listener, ub_w_transform, "/world", "/ur_base_link");
         ub_w_transform.setOrigin(tf::Vector3(0,0,0));
         
         tf::Vector3 tcp_linear_vel_world = ub_w_transform * tcp_linear_vel;
         tf::Vector3 tcp_angular_vel_world = ub_w_transform * tcp_angular_vel;
         
+        updateTransform(tf_listener, ref_ub_transform, "/ur_base_link", "/reference");
+        tf::Vector3 tcp_in_urbase = ref_ub_transform.getOrigin();
+        tf::Vector3 tcp_in_world = ub_w_transform * tcp_in_urbase; // just rotate operation
+        tf::Vector3 tcp_vel_in_world = platform_linear_vel;// + tf::Vector3(-platform_angular_vel[2] * tcp_in_world[1], platform_angular_vel[2] * tcp_in_world[0], 0);
+        
         for(int i = 0; i < 3; i++)
         {
-            command_linear_vel[i] = Kp_pose * diff_vector(i)               /*P*/
-                                        + Ki_pose * integral_vector(i)          /*I*/
-                                        + Kd_pose * tcp_linear_vel_world[i]     /*D*/
-                                        + Kf_pose * path_vel(i, 0);             /*Feedforward*/
+            command_linear_vel[i] = Kp_pose * diff_vector(i)              /*P*/
+                                  + Ki_pose * integral_vector(i)          /*I*/
+                                  + Kd_pose * tcp_linear_vel_world[i]     /*D*/
+                                  + Kf_pose * path_vel(i, 0)              /*Feedforward*/
+                                  + Kpf_pose * tcp_vel_in_world[i];       /*Feedforward of platform vel*/
         }
         double linear_v = calcNorm(command_linear_vel);
         double max_linear_speed = 0.2; //TODO, change the linear speed limit
@@ -193,14 +202,14 @@ double calcNorm(tf::Vector3 vector)
 	return sqrt(vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2]);
 }
 
-void updateUB_W(tf::TransformListener &tf_listener, tf::StampedTransform &ub_w_transform)
+void updateTransform(tf::TransformListener &tf_listener, tf::StampedTransform &transform, string parent, string child)
 {
     bool s = false;
     while(!s && ros::ok())
     {
         try
         {
-            tf_listener.lookupTransform("/world", "/ur_base_link", ros::Time(0), ub_w_transform);
+            tf_listener.lookupTransform(parent, child, ros::Time(0), transform);
             s = true;
         }
         catch (tf::TransformException &ex)
