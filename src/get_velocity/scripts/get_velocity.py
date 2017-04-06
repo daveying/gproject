@@ -14,23 +14,27 @@ class getVelocity:
         self.duration_time = 0.033
         self.poseArray = [Pose2D(), Pose2D(), Pose2D(), Pose2D(), Pose2D(), Pose2D(), Pose2D(),
                           Pose2D(), Pose2D(), Pose2D()]
+        self.velocityArray = [TwistStamped(), TwistStamped(), TwistStamped(), TwistStamped(), TwistStamped(), 
+                              TwistStamped(), TwistStamped(), TwistStamped(), TwistStamped(), TwistStamped()]
         self.current_position = Pose2D()
         self.last_position = Pose2D()
         self.velocity_laser = TwistStamped()
         self.velocity = TwistStamped()
-        self.count = 0
-        self.bias = 0.165
+        self.pose_count = 0
+        self.velocity_count = 0
+        self.bias = 0
 
     def getPose(self):
         """listion to pose2D topic"""
         rospy.Subscriber("pose2D", Pose2D, self.callback)
         rospy.spin()
 
-    def moveAverage(self, pose):
+    def pose_moveAverage(self, pose):
         """get average pose every 5 positions"""
         temp_x = 0
         temp_y = 0
         temp_theta = 0
+        current_position = Pose2D()
         # update pose array and sum 5 position
         for i in range(9):
             self.poseArray[i] = self.poseArray[i + 1]
@@ -42,39 +46,66 @@ class getVelocity:
         temp_y = temp_y + self.poseArray[9].y
         temp_theta = temp_theta + self.poseArray[9].theta
         # get average position
-        self.current_position.x = temp_x/10.0
-        self.current_position.y = temp_y/10.0
-        self.current_position.theta = temp_theta/10.0
-        #return self.current_position
+        current_position.x = temp_x/10.0
+        current_position.y = temp_y/10.0
+        current_position.theta = temp_theta/10.0
+        return current_position
+
+    def velocity_moveAverage(self, velocity):
+        """get average pose every 5 positions"""
+        temp_x = 0
+        temp_y = 0
+        temp_theta = 0
+        current_velocity = TwistStamped()
+        # update pose array and sum 5 position
+        for i in range(9):
+            self.velocityArray[i] = self.velocityArray[i + 1]
+            temp_x = temp_x + self.velocityArray[i].twist.linear.x
+            temp_y = temp_y + self.velocityArray[i].twist.linear.y
+            temp_theta = temp_theta + self.velocityArray[i].twist.angular.z
+        self.velocityArray[9] = velocity
+        temp_x = temp_x + self.velocityArray[9].twist.linear.x
+        temp_y = temp_y + self.velocityArray[9].twist.linear.y
+        temp_theta = temp_theta + self.velocityArray[9].twist.angular.z
+        # get average position
+        current_velocity.twist.linear.x = temp_x/10.0
+        current_velocity.twist.linear.y = temp_y/10.0
+        current_velocity.twist.linear.z = temp_theta/10.0
+        return current_velocity
 
     def callback(self, pose):
         """callback funciton."""
-        if self.count < 10:
-            self.poseArray[self.count] = pose
-            self.count = self.count + 1
+        if self.pose_count < 10:
+            self.poseArray[self.pose_count] = pose
+            self.pose_count = self.pose_count + 1
             self.last_position = pose
-        if self.count == 10:
-            # using moving average to caculate position of laser platform
-            self.moveAverage(pose)
+        if self.pose_count == 10:
+            # using moving average to caculate velocity of laser platform
+            self.current_position = self.pose_moveAverage(pose)
 
-            # caculate laser velocity
+            # caculate velocity of laser
             self.velocity_laser.twist.linear.x = (self.current_position.x - self.last_position.x) / self.duration_time
             self.velocity_laser.twist.linear.y = (self.current_position.y - self.last_position.y) / self.duration_time
             self.velocity_laser.twist.angular.z = (self.current_position.theta - self.last_position.theta) / self.duration_time
-            print "laser velocity: ", self.velocity_laser
+            print "velocity: ", self.velocity_laser
 
             # caculate AIMM platform velocity
             theta = self.current_position.theta
             self.velocity.twist.linear.x = self.velocity_laser.twist.linear.x + self.velocity_laser.twist.angular.z * self.bias * math.sin(theta)
             self.velocity.twist.linear.y = self.velocity_laser.twist.linear.y - self.velocity_laser.twist.angular.z * self.bias * math.cos(theta)
-            self.velocity.twist.angular.z = self.velocity_laser.twist.angular.z
-            print "platform velocity: ", self.velocity
 
-            # set time stamp
+            # save velocity to velocityArray
+            if self.velocity_count < 10:
+                self.velocityArray[self.velocity_count] = self.velocity
+                self.velocity_count = self.velocity_count + 1
+
+            # use move average on velocity
+            if self.velocity_count == 10:
+                self.velocity = self.velocity_moveAverage(self.velocity)
+
+            #publish velocity topic
             self.velocity_laser.header.stamp = rospy.get_rostime()
             self.velocity.header.stamp = rospy.get_rostime()
-
-            # publish topic
             self.laservelocity_pub.publish(self.velocity_laser)
             self.velocity_pub.publish(self.velocity)
 
@@ -86,3 +117,4 @@ class getVelocity:
 if __name__ == '__main__':
     robotVel = getVelocity()
     robotVel.getPose()
+

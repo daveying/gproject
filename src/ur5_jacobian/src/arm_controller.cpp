@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     
     ros::Subscriber sub_path_vel = n.subscribe("/path_vel", 1000, pathVelCallback);
     ros::Subscriber sub_tcp_vel = n.subscribe("/tcp_velocities", 1000, tcpVelCallback);
-    ros::Subscriber sub_platform_vel = n.subscribe("/laserplatform_speeds", 1000, platformVelCallback);
+    ros::Subscriber sub_platform_vel = n.subscribe("/platform_speeds", 1000, platformVelCallback);
     //ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/tcp_desired_vel_arm", 1000);
     ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/desired_speeds", 1000);
     
@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     double integral_angle = 0;
     tf::Vector3 t_w_wxyz;
     
-    //double Kp_pose = 4, Ki_pose = 0.0001, Kd_pose = -0.05, Kf_pose = 1, Kpf_pose = -1;
-    double Kp_pose = 4, Ki_pose = 0.0001, Kd_pose = -0.05, Kf_pose = 1, Kpf_pose = -1;
+    //double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
+    double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
     double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0;
     
     updateDiff(tf_listener, diff_vector, axis, shortest_angle);
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     tf::StampedTransform ub_w_transform;// /ur_base_link respect to /world
     tf::StampedTransform ref_ub_transform; // /reference respect to /ur_base_link
     
-    MovingAverage smoother(8);
+    MovingAverage smoother(10);
     
     while(ros::ok())
     {
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
         updateTransform(tf_listener, ref_ub_transform, "/ur_base_link", "/reference");
         tf::Vector3 tcp_in_urbase = ref_ub_transform.getOrigin();
         tf::Vector3 tcp_in_world = ub_w_transform * tcp_in_urbase; // just rotate operation
-        tf::Vector3 tcp_vel_in_world = platform_linear_vel;// + tf::Vector3(-platform_angular_vel[2] * tcp_in_world[1], platform_angular_vel[2] * tcp_in_world[0], 0);
+        tf::Vector3 tcp_vel_in_world = platform_linear_vel + tf::Vector3(-platform_angular_vel[2] * tcp_in_world[1], platform_angular_vel[2] * tcp_in_world[0], 0);
         
         for(int i = 0; i < 3; i++)
         {
