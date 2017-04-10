@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 {
     circle_centor.x = 0.5;
     circle_centor.y = -0.55;
-    circle_centor.z = 1.045;//FIXME
+    circle_centor.z = 0.945;//FIXME
     
     
     ros::init(argc, argv, "path_publisher");

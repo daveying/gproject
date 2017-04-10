@@ -4,3 +4,4 @@ build/
 devel/
 bags/
 src/aimm_moveit_config/default_warehouse_mongo_db/
+src/shadow_calibration/

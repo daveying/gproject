@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     }*/
     
     //create matrixes for jacobian acquiring and joint speed calculation
-    Eigen::Vector3d reference_point_position(0.0, 0.0, 0.0); //respect to specified frame: last frame of `manipulator` group
+    Eigen::Vector3d reference_point_position(0.0, 0.1, 0.0); //respect to specified frame: last frame of `manipulator` group
     Eigen::MatrixXd jacobian; // for jacobian acquiring
     
     Eigen::MatrixXd joint_ctrl_velocities(6, 1);
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
             
             // calculate tcp velocities for debug
             tcp_velocities = jacobian * joint_velocities;
-            //ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities.transpose());
+            ROS_INFO_STREAM("TCP velocities: \n" << tcp_velocities.transpose());
             // msg for debug
             tcp_msg.header = header;
             tcp_msg.twist.linear.x = tcp_velocities(0, 0);

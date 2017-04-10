@@ -53,11 +53,11 @@ int main(int argc, char **argv)
     ros::Subscriber sub_tcp_vel = n.subscribe("/tcp_velocities", 1000, tcpVelCallback);
     ros::Subscriber sub_platform_vel = n.subscribe("/platform_speeds", 1000, platformVelCallback);
     //ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/tcp_desired_vel_arm", 1000);
-    ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/desired_speeds", 1000);
+    ros::Publisher pub_tcp_desired_vel = n.advertise<geometry_msgs::TwistStamped>("/desired_speeds", 1000); //target vel feedforward
     
     tf::TransformListener tf_listener;
-    Eigen::Vector3d diff_vector(0.0, 0.0, 0.0);
-    Eigen::Vector3d integral_vector(0.0, 0.0, 0.0);
+    Eigen::Vector3d diff_vector(0.0, 0.0, 0.0); //position diff between goal and reference, respect to world frame
+    Eigen::Vector3d integral_vector(0.0, 0.0, 0.0); //integral of diff vector
     
     tf::Vector3 axis(0.0, 0.0, 0.0);
     double shortest_angle = 0;
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     
     //double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
     double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
-    double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0;
+    double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0, Kpf_orien = -1;
     
     updateDiff(tf_listener, diff_vector, axis, shortest_angle);
     integralDiff(diff_vector, shortest_angle, integral_vector, integral_angle);
@@ -91,6 +91,7 @@ int main(int argc, char **argv)
         tf::Vector3 tcp_in_urbase = ref_ub_transform.getOrigin();
         tf::Vector3 tcp_in_world = ub_w_transform * tcp_in_urbase; // just rotate operation
         tf::Vector3 tcp_vel_in_world = platform_linear_vel + tf::Vector3(-platform_angular_vel[2] * tcp_in_world[1], platform_angular_vel[2] * tcp_in_world[0], 0);
+        ROS_INFO("tcp_vel_in_world: %lf, %lf, %lf", tcp_vel_in_world[0], tcp_vel_in_world[1], tcp_vel_in_world[2]);
         
         for(int i = 0; i < 3; i++)
         {
@@ -109,6 +110,7 @@ int main(int argc, char **argv)
         double angular_v = Kp_orien * shortest_angle
                             + Ki_orien * integral_angle
                             + Kd_orien * calcNorm(tcp_angular_vel_world);
+                            + Kpf_orien * platform_angular_vel;
         double max_angular_speed = 0.4; //TODO, change the angular speed limit
         if(angular_v > max_angular_speed)
         {
