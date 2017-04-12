@@ -11,6 +11,7 @@ Panels:
         - /MotionPlanning1/Planning Request1
         - /MotionPlanning1/Planned Path1
         - /TF1
+        - /LaserScan1
       Splitter Ratio: 0.74256
     Tree Height: 332
   - Class: rviz/Help
@@ -78,6 +79,21 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          camera_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          camera_link_supp1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          camera_link_supp2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ee_link:
             Alpha: 1
             Show Axes: false
@@ -89,21 +105,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           gripper_base:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect_supp1:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect_supp2:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -215,6 +216,21 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          camera_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          camera_link_supp1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          camera_link_supp2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ee_link:
             Alpha: 1
             Show Axes: false
@@ -226,21 +242,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           gripper_base:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect_supp1:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          kinect_supp2:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -312,23 +313,27 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        camera_link:
+          Value: true
+        camera_link_supp1:
+          Value: true
+        camera_link_supp2:
+          Value: true
         ee_link:
           Value: true
         forearm_link:
           Value: true
+        goal:
+          Value: true
         gripper_base:
-          Value: true
-        kinect:
-          Value: true
-        kinect_supp1:
-          Value: true
-        kinect_supp2:
           Value: true
         laser:
           Value: true
         laser_supporter_b:
           Value: true
         laser_supporter_f:
+          Value: true
+        reference:
           Value: true
         shoulder_link:
           Value: true
@@ -365,14 +370,14 @@ Visualization Manager:
             laser_supporter_f:
               {}
             supporter:
-              kinect_supp1:
+              camera_link_supp1:
                 {}
-              kinect_supp2:
+              camera_link_supp2:
                 {}
               ur_base_link:
                 base:
                   {}
-                kinect:
+                camera_link:
                   {}
                 shoulder_link:
                   upper_arm_link:
@@ -382,12 +387,46 @@ Visualization Manager:
                           wrist_3_link:
                             ee_link:
                               {}
+                            reference:
+                              {}
                             tool0:
                               gripper_base:
                                 {}
             tool0_controller:
               {}
+          goal:
+            {}
       Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
   Enabled: true
   Global Options:
@@ -416,10 +455,10 @@ Visualization Manager:
         Z: 2.23518e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.774797
+      Pitch: 0.374798
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 2.22991
+      Yaw: 3.21989
     Saved: ~
 Window Geometry:
   Displays:
@@ -435,5 +474,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1828
-  X: 72
+  X: 62
   Y: 14

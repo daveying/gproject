@@ -58,17 +58,17 @@
   </link>
 
 
-  <link name="kinect_supp1">
+  <link name="camera_link_supp1">
 	<visual>
 		<geometry>
-			<box size="0.04 0.04 0.2"/>
+			<box size="0.04 0.04 0.4"/>
 		</geometry>
 		<origin xyz="0 0 0"/>
 		<material name="p"/>
 	</visual>
   </link>
 
-  <link name="kinect_supp2">
+  <link name="camera_link_supp2">
 	<visual>
 		<geometry>
 			<box size="0.04 0.04 0.9"/>
@@ -78,7 +78,7 @@
 	</visual>
   </link>
 
-  <link name="kinect">
+  <link name="camera_link">
 	<visual>
 		<geometry>
 			<box size="0.025 0.18 0.035" />
@@ -88,21 +88,21 @@
 
 
 
-  <joint name="ur_base_link_to_kinect" type="fixed">
+  <joint name="ur_base_link_to_camera_link" type="fixed">
 	<parent link="ur_base_link"/>
-	<child link="kinect"/>
-	<origin xyz="-0.3541575 0.1507695 0.779517" rpy="-0.369 0.825 1.119"/>
+	<child link="camera_link"/>
+	<origin xyz="-0.547092 0.112523 0.586811" rpy="-0.219 0.636 1.266"/>
   </joint>
 
-  <joint name="supporter_to_kinect_supp1" type="fixed">
+  <joint name="supporter_to_camera_link_supp1" type="fixed">
 	<parent link="supporter"/>
-	<child link="kinect_supp1"/>
-	<origin xyz="0.03 0.15 0.44" rpy="1.57 0 0"/>
+	<child link="camera_link_supp1"/>
+	<origin xyz="0.03 0.25 0.44" rpy="1.57 0 0"/>
   </joint>
-  <joint name="supporter_to_kinect_supp2" type="fixed">
+  <joint name="supporter_to_camera_link_supp2" type="fixed">
 	<parent link="supporter"/>
-	<child link="kinect_supp2"/>
-	<origin xyz="0.03 0.27 0.87" rpy="0 0 0"/>
+	<child link="camera_link_supp2"/>
+	<origin xyz="0.03 0.47 0.87" rpy="0 0 0"/>
   </joint>
 
   <joint name="base_link_to_laser" type="fixed">

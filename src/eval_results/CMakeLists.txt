@@ -154,6 +154,18 @@ target_link_libraries(get_pose
    ${catkin_LIBRARIES}
 )
 
+## Declare a C++ executable
+add_executable(steady_experiments src/steady_experiments.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(steady_experiments ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(steady_experiments
+   ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
