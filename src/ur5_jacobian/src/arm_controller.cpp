@@ -64,15 +64,11 @@ int main(int argc, char **argv)
     double integral_angle = 0;
     tf::Vector3 t_w_wxyz;
     
-<<<<<<< HEAD
-    //double Kp_pose = 4.4 or 3.0, Ki_pose = 0.000, Kd_pose = -0.2 or 0.1, Kf_pose = 1, Kpf_pose = -1;
-    double Kp_pose = 0, Ki_pose = 0.000, Kd_pose = -0.0, Kf_pose = 0, Kpf_pose = -0;
-    double Kp_orien = 4.4, Ki_orien = 0, Kd_orien = -0.0, Kpf_orien = -1;
-=======
+
     //double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
     double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
     double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0, Kpf_orien = -1;
->>>>>>> d9fb0d31575758a8bfbf2ec75087370aa42971f1
+
     
     updateDiff(tf_listener, diff_vector, axis, shortest_angle);
     integralDiff(diff_vector, shortest_angle, integral_vector, integral_angle);
@@ -117,11 +113,9 @@ int main(int argc, char **argv)
                             + Ki_orien * integral_angle
                             + Kd_orien * calcNorm(tcp_angular_vel_world);
                             + Kpf_orien * platform_angular_vel;
-<<<<<<< HEAD
-        double max_angular_speed = 10.4; //TODO, change the angular speed limit
-=======
+
         double max_angular_speed = 0.4; //TODO, change the angular speed limit
->>>>>>> d9fb0d31575758a8bfbf2ec75087370aa42971f1
+
         if(angular_v > max_angular_speed)
         {
             angular_v = max_angular_speed;
