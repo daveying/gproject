@@ -3,7 +3,11 @@ import rospy
 import math
 from geometry_msgs.msg import Pose2D, TwistStamped
 
+<<<<<<< HEAD
 length = 8
+=======
+length = 7
+>>>>>>> d9fb0d31575758a8bfbf2ec75087370aa42971f1
 
 class getVelocity:
     """listion pose2D topic and caculate velocity"""
