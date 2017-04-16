@@ -30,12 +30,15 @@ geometry_msgs::Point circle_centor;
 vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_ampli, double freq);
 vector<geometry_msgs::PoseStamped> generateLinePath(double length, double v_ampli, double freq);
 void normalize(geometry_msgs::Vector3 &src, double len = 1);
-vector<geometry_msgs::PoseStamped> generateSprayPath(double v_ampli, double freq);
+vector<geometry_msgs::PoseStamped> generateDeburPath(double x, double y, double v_ampli, double freq);
+void moveVel(ros::Publisher &pub, geometry_msgs::Twist msg_goal, geometry_msgs::Twist msg_cur, double sec = 1);
+
+double offset = 0.027;
 
 int main(int argc, char **argv)
 {
     circle_centor.x = 0.5;
-    circle_centor.y = -0.55;
+    circle_centor.y = -0.7;
     circle_centor.z = 0.945;//FIXME
     
     
@@ -43,48 +46,33 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     tf::TransformBroadcaster br;
-    ros::Publisher pub_path_vel = n.advertise<geometry_msgs::TwistStamped>("/path_vel", 1000);
     ros::Publisher pub_pose = n.advertise<geometry_msgs::PoseStamped>("/goal_pose", 1000);
-    
-    int flag = 2; //0 for circle 1 for line and 2 for steady
+    ros::Publisher pub_agv = n.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
+
     vector<geometry_msgs::PoseStamped> path;
-    if(flag == 0)
-    {
-        path = generateCirclePath(0.1, v_ampli, 30);
-    }
-    if(flag == 1)
-    {
-        path = generateLinePath(0.3, v_ampli, 30);
-    }
-    if(flag == 2)
-    {
-        path = generateSprayPath(v_ampli, 30);
-    }
+    vector<geometry_msgs::PoseStamped> path2;
+
+    path = generateDeburPath(circle_centor.x, circle_centor.y, v_ampli, 30);
+    path2 = generateDeburPath(0.74, circle_centor.y + offset, v_ampli, 30);
+
     ROS_INFO("test, %lf", path[0].pose.position.x);
+    ROS_INFO("test, %lf", path2[0].pose.position.x);
     tf::Transform transform;
     tf::Quaternion orien;
     orien.setRPY(0, 0, 0);
-    if(flag == 2)
-        orien.setRPY(-pi/2, pi, 0);
     transform.setRotation(orien);
     transform.setOrigin(tf::Vector3(path[0].pose.position.x, path[0].pose.position.y, path[0].pose.position.z));
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "goal"));
     pub_pose.publish(path[0]);
     
-    geometry_msgs::TwistStamped vel_msg;
-    vel_msg.header.stamp = ros::Time::now();
-    vel_msg.twist.linear.x = 0;
-    vel_msg.twist.linear.y = 0;
-    vel_msg.twist.linear.z = 0;
-    vel_msg.twist.angular.x = 0;
-    vel_msg.twist.angular.y = 0;
-    vel_msg.twist.angular.z = 0;
-    pub_path_vel.publish(vel_msg);
+
     
-    ros::Rate rate(40);
+    ros::Rate rate(100);
     ros::Time begin_t = ros::Time::now();
     long index = 1;
-    while(ros::ok())
+    long index2 = 1;
+    bool first_finish = false;
+    while(ros::ok() && !first_finish)
     {
         ros::Time current = ros::Time::now();
         pub_pose.publish(path[index]);
@@ -92,32 +80,69 @@ int main(int argc, char **argv)
         if(  (current.toSec() - begin_t.toSec() >= path[index - 1].header.stamp.toSec())   &&   index < path.size())
         {
             transform.setOrigin(tf::Vector3(path[index].pose.position.x, path[index].pose.position.y, path[index].pose.position.z));
-            if(flag == 0)
-            {
-                vel_msg.twist.linear.x = -(path[index].pose.position.y - circle_centor.y);
-                vel_msg.twist.linear.y = path[index].pose.position.x - circle_centor.x;
-                normalize(vel_msg.twist.linear, v_ampli);
-            }
-            if(flag == 1)
-            {
-                vel_msg.twist.linear.x = 0;
-                vel_msg.twist.linear.y = -v_ampli;
-            }
             index++;
         }
-        if(index >= path.size() - 1 || index <= 2) // index already increased by 1
+        if(index == path.size())
         {
-            vel_msg.twist.linear.x = 0;
-            vel_msg.twist.linear.y = 0;
+            first_finish = true;
         }
-        vel_msg.header.stamp = ros::Time::now();
-        pub_path_vel.publish(vel_msg);
+
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "goal"));
         rate.sleep();
         ros::spinOnce();
     }
+    geometry_msgs::Twist agv_cur;
+    geometry_msgs::Twist agv_goal;
+    agv_cur.linear.x = 0;
+    agv_cur.linear.y = 0;
+    agv_goal.linear.x = 1;
+    agv_goal.linear.y = 0;
+    moveVel(pub_agv, agv_goal, agv_cur);
+    ros::Duration(4).sleep();
+    agv_cur.linear.x = 1;
+    agv_cur.linear.y = 0.0;
+    agv_goal.linear.x = 0;
+    agv_goal.linear.y = 0;
+    moveVel(pub_agv, agv_goal, agv_cur);
+    begin_t = ros::Time::now();
+    while(ros::ok())
+    {
+        ros::Time current = ros::Time::now();
+        pub_pose.publish(path2[index2]);
+        
+        if(  (current.toSec() - begin_t.toSec() >= path2[index2 - 1].header.stamp.toSec())   &&   index2 < path2.size())
+        {
+            transform.setOrigin(tf::Vector3(path2[index2].pose.position.x, path2[index2].pose.position.y, path2[index2].pose.position.z));
+            index2++;
+        }
+        else
+        {
+            first_finish = true;
+        }
+
+        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "goal"));
+        pub_agv.publish(agv_goal);
+        rate.sleep();
+        ros::spinOnce();
+    }
     ros::spin();
-    ros::spin();
+}
+
+
+void moveVel(ros::Publisher &pub, geometry_msgs::Twist msg_goal, geometry_msgs::Twist msg_cur, double sec)
+{
+    int sec_int = sec * 10;
+    geometry_msgs::Twist msg;
+    for(int i = 0; i < sec_int; i++)
+    {
+        msg.linear.x = msg_cur.linear.x + (msg_goal.linear.x - msg_cur.linear.x) * i / sec_int;
+        msg.linear.y = msg_cur.linear.y + (msg_goal.linear.y - msg_cur.linear.y) * i / sec_int;
+        msg.angular.z = msg_cur.angular.z + (msg_goal.angular.z - msg_cur.angular.z) * i / sec_int;
+        
+        pub.publish(msg);
+        ros::Duration(0.1).sleep();
+    }
+
 }
 
 void normalize(geometry_msgs::Vector3 &src, double len)
@@ -128,79 +153,66 @@ void normalize(geometry_msgs::Vector3 &src, double len)
     src.z = src.z * len / length;
 }
 
-vector<geometry_msgs::PoseStamped> generateSprayPath(double v_ampli, double freq)
-{
+vector<geometry_msgs::PoseStamped> generateDeburPath(double x, double y, double v_ampli, double freq)
+{    
     geometry_msgs::PoseStamped item;
     vector<geometry_msgs::PoseStamped> path;
     
     item.header.frame_id = "/world";
-    item.header.stamp = ros::Time(5);
-    item.pose.position.x = 0.6;
-    item.pose.position.y = -0.55;
-    item.pose.position.z = 1.2;
+    item.header.stamp = ros::Time(3); //FIXME, choose a suitable duration
+    item.pose.position.x = x;
+    item.pose.position.y = y;
+    item.pose.position.z = circle_centor.z + 0.03;
     item.pose.orientation.w = 1;
     item.pose.orientation.x = item.pose.orientation.y = item.pose.orientation.z = 0;
     
     path.push_back(item);
-    double v_time = 4;
-    double h_time = 3;
-    //first down
-    for(int i = 0; i <= v_time*freq; i++)
-    {
-        item.pose.position.z -= v_ampli * 2 / freq;
-        item.header.stamp += ros::Duration(1 / freq);
-        path.push_back(item);
-    }
-    path[path.size()-1].header.stamp += ros::Duration(1);
-    //first forward
-    for(int i = 0; i <= h_time*freq; i++)
-    {
-        item.pose.position.x += v_ampli / freq;
-        item.header.stamp += ros::Duration(1/ freq);
-        path.push_back(item);
-    }
-    path[path.size()-1].header.stamp += ros::Duration(1);
-    //first up
-    for(int i = 0; i <= v_time*freq; i++)
-    {
-        item.pose.position.z += v_ampli * 2 / freq;
-        item.header.stamp += ros::Duration(1 / freq);
-        path.push_back(item);
-    }
-    path[path.size()-1].header.stamp += ros::Duration(1);
-    //second forward
-    for(int i = 0; i <= h_time*freq; i++)
-    {
-        item.pose.position.x += v_ampli / freq;
-        item.header.stamp += ros::Duration(1/ freq);
-        path.push_back(item);
-    }
-    path[path.size()-1].header.stamp += ros::Duration(1);
     
+    item.pose.position.z = circle_centor.z;
+    item.header.stamp += ros::Duration(1);
+    path.push_back(item);
     
-    //second down
-    for(int i = 0; i <= v_time*freq; i++)
-    {
-        item.pose.position.z -= v_ampli * 2 / freq;
-        item.header.stamp += ros::Duration(1 / freq);
-        path.push_back(item);
-    }
-    path[path.size()-1].header.stamp += ros::Duration(1);
-    //third forward
-    for(int i = 0; i <= h_time*freq; i++)
+    double long_time = 4;
+    double short_time = 2;
+    double stay_time = 2;
+    
+    for(int i = 0; i < long_time * freq; i++)
     {
         item.pose.position.x += v_ampli / freq;
-        item.header.stamp += ros::Duration(1/ freq);
+        item.header.stamp += ros::Duration(1/freq);
         path.push_back(item);
     }
-    path[path.size()-1].header.stamp += ros::Duration(1);
-    //second up
-    for(int i = 0; i <= v_time*freq; i++)
+    path[path.size() - 1].header.stamp += ros::Duration(stay_time);
+    for(int i = 0; i < short_time * freq; i++)
     {
-        item.pose.position.z += v_ampli * 2 / freq;
-        item.header.stamp += ros::Duration(1 / freq);
+        item.pose.position.y += v_ampli / freq;
+        item.header.stamp += ros::Duration(1/freq);
         path.push_back(item);
     }
+    path[path.size() - 1].header.stamp += ros::Duration(stay_time);
+    for(int i = 0; i < short_time * freq; i++)
+    {
+        item.pose.position.x += v_ampli / freq;
+        item.header.stamp += ros::Duration(1/freq);
+        path.push_back(item);
+    }
+    path[path.size() - 1].header.stamp += ros::Duration(stay_time);
+    for(int i = 0; i < short_time * freq; i++)
+    {
+        item.pose.position.y -= v_ampli / freq;
+        item.header.stamp += ros::Duration(1/freq);
+        path.push_back(item);
+    }
+    path[path.size() - 1].header.stamp += ros::Duration(stay_time);
+    item.pose.position.z += 0.03;
+    item.header.stamp += ros::Duration(1);
+    path.push_back(item);
+    
+    if(x == circle_centor.x && y == circle_centor.y)
+    {
+        item.pose.position.y += offset;
+    }
+    
     return path;
     
 }

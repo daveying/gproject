@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     
 
     //double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
-    double Kp_pose = 4.4, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
+    double Kp_pose = 3, Ki_pose = 0.000, Kd_pose = -0.2, Kf_pose = 1, Kpf_pose = -1;
     double Kp_orien = 2, Ki_orien = 0, Kd_orien = 0, Kpf_orien = -1;
 
     

@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     ros::Publisher pub_path_vel = n.advertise<geometry_msgs::TwistStamped>("/path_vel", 1000);
     ros::Publisher pub_pose = n.advertise<geometry_msgs::PoseStamped>("/goal_pose", 1000);
     
-    int flag = 2; //0 for circle 1 for line and 2 for steady
+    int flag = 0; //0 for circle 1 for line and 2 for steady
     vector<geometry_msgs::PoseStamped> path;
     if(flag == 0)
     {
