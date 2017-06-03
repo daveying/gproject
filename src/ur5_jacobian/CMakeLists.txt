@@ -191,6 +191,30 @@ target_link_libraries(publish_path
 )
 
 ## Declare a C++ executable
+add_executable(publish_path2 src/publish_path2.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(publish_path2  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(publish_path2 
+   ${catkin_LIBRARIES}
+)
+
+## Declare a C++ executable
+add_executable(publish_path_sf src/publish_path_sf.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(publish_path_sf  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(publish_path_sf 
+   ${catkin_LIBRARIES}
+)
+
+## Declare a C++ executable
 add_executable(publish_spray_path src/publish_spray_path.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -238,6 +262,7 @@ add_dependencies(follower_with_orientation  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 target_link_libraries(follower_with_orientation
    ${catkin_LIBRARIES}
 )
+
 #############
 ## Install ##
 #############

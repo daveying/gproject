@@ -157,10 +157,16 @@ vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_am
     for(int i = 1; i <= 2 * pi / delt_theta; i++)
     {
         item.header.stamp += ros::Duration(1 / freq);
-
+        if(i < pi/delt_theta && i > 3*pi/8/delt_theta)
+        {
+            item.pose.position.x = circle_centor.x + (radius + 0.008) * cos(i*delt_theta);
+            item.pose.position.y = circle_centor.y + (radius + 0.008) * sin(i*delt_theta);     
+        }
+        else
+        {
             item.pose.position.x = circle_centor.x + radius * cos(i*delt_theta);
             item.pose.position.y = circle_centor.y + radius * sin(i*delt_theta);
-        
+        }
         path.push_back(item);
     }
     path[path.size() - 1].header.stamp += ros::Duration(1);

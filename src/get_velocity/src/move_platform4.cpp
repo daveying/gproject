@@ -20,50 +20,35 @@ int main(int argc, char** argv)
 	geometry_msgs::Twist agv_cur;
 	geometry_msgs::Twist agv_goal;
 	
+	/*
 	agv_cur.linear.x = 0;
 	agv_cur.linear.y = 0;
-	agv_goal.linear.x = 1;
-	agv_goal.linear.y = 0.4;
-	moveVel(pub_agv, agv_goal, agv_cur);
-	ros::Duration(2.5).sleep();
-	agv_cur.linear.x = 1;
-	agv_cur.linear.y = 0.4;
-	agv_goal.linear.x = 0;
+	agv_goal.linear.x = -1.5;
 	agv_goal.linear.y = 0;
-	moveVel(pub_agv, agv_goal, agv_cur);
-	
-	agv_cur.linear.x = 0;
-	agv_cur.linear.y = 0;
-	agv_goal.linear.x = -1;
-	agv_goal.linear.y = 0.0;
-	moveVel(pub_agv, agv_goal, agv_cur);
-	ros::Duration(2.5).sleep();
-	agv_cur.linear.x = -1;
+	moveVel(pub_agv, agv_goal, agv_cur, 0.5);
+	ros::Duration(5).sleep();
+	agv_cur.linear.x = -1.5;
 	agv_cur.linear.y = 0.0;
 	agv_goal.linear.x = 0;
 	agv_goal.linear.y = 0;
-	moveVel(pub_agv, agv_goal, agv_cur);
+	moveVel(pub_agv, agv_goal, agv_cur, 0.5);
 	
-
 	agv_cur.linear.x = 0;
 	agv_cur.linear.y = 0;
 	agv_goal.linear.x = 0;
-	agv_goal.linear.y = -1;
-	moveVel(pub_agv, agv_goal, agv_cur);
-	ros::Duration(2.5).sleep();
+	agv_goal.linear.y = -1.5;
+	moveVel(pub_agv, agv_goal, agv_cur, 0.5);
 	agv_cur.linear.x = 0;
-	agv_cur.linear.y = -1;
-	agv_goal.linear.x = 0;
-	agv_goal.linear.y = 0;
-	moveVel(pub_agv, agv_goal, agv_cur);
-	
+	agv_cur.linear.y = -1.5;
+*/	
 
 	ros::Rate r(10);
 	
 	while(ros::ok())
 	{
-	    agv_goal.linear.x = 0;
-	    agv_goal.linear.y = 0;
+	    agv_goal.linear.x = 2.2;
+	    agv_goal.linear.y = 0.0;
+	    agv_goal.angular.z = -1.5;
 	    pub_agv.publish(agv_goal);
 	    r.sleep();
 	    ros::spinOnce();

@@ -23,7 +23,7 @@
 #include <vector>
 using namespace std;
 
-const double v_ampli = 0.04; //unit m/s. amplitude of tcp moving velocity
+const double v_ampli = 0.0448; //unit m/s. amplitude of tcp moving velocity
 const double pi = 3.1415926;
 geometry_msgs::Point circle_centor;
 
@@ -33,9 +33,9 @@ void normalize(geometry_msgs::Vector3 &src, double len = 1);
 
 int main(int argc, char **argv)
 {
-    circle_centor.x = 0.5;
-    circle_centor.y = -0.55;
-    circle_centor.z = 0.945;//FIXME
+    circle_centor.x = 0.0;
+    circle_centor.y = -0.73;
+    circle_centor.z = 1.043;//FIXME
     
     
     ros::init(argc, argv, "path_publisher");
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     vector<geometry_msgs::PoseStamped> path;
     if(flag == 0)
     {
-        path = generateCirclePath(0.1, v_ampli, 30);
+        path = generateCirclePath(0.2, v_ampli, 30);
     }
     if(flag == 1)
     {
@@ -134,15 +134,15 @@ void normalize(geometry_msgs::Vector3 &src, double len)
     src.z = src.z * len / length;
 }
 
-vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_ampli, double freq)
+vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_ampli, double freq) 
 {
     geometry_msgs::PoseStamped item;
     vector<geometry_msgs::PoseStamped> path;
     
     item.header.frame_id = "/world";
-    item.header.stamp = ros::Time(5); //FIXME, choose a suitable duration
-    item.pose.position.x = circle_centor.x + radius;
-    item.pose.position.y = circle_centor.y;
+    item.header.stamp = ros::Time(4); //FIXME, choose a suitable duration
+    item.pose.position.x = circle_centor.x;
+    item.pose.position.y = circle_centor.y + radius;
     item.pose.position.z = circle_centor.z + 0.03;
     item.pose.orientation.w = 1;
     item.pose.orientation.x = item.pose.orientation.y = item.pose.orientation.z = 0;
@@ -150,7 +150,7 @@ vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_am
     path.push_back(item);
     
     item.pose.position.z = circle_centor.z;
-    item.header.stamp += ros::Duration(1);
+    item.header.stamp += ros::Duration(1); //FIXME, choose a suitable duration
     path.push_back(item);
     
     double delt_theta = v_ampli / (radius * freq);
@@ -158,8 +158,8 @@ vector<geometry_msgs::PoseStamped> generateCirclePath(double radius, double v_am
     {
         item.header.stamp += ros::Duration(1 / freq);
 
-            item.pose.position.x = circle_centor.x + radius * cos(i*delt_theta);
-            item.pose.position.y = circle_centor.y + radius * sin(i*delt_theta);
+            item.pose.position.x = circle_centor.x + radius * sin(i*delt_theta);
+            item.pose.position.y = circle_centor.y + radius * cos(i*delt_theta);
         
         path.push_back(item);
     }

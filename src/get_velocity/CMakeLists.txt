@@ -139,6 +139,7 @@ add_executable(get_laser_vel src/get_laser_velocity_node.cpp)
 add_executable(move_platform src/move_platform.cpp)
 add_executable(move_platform2 src/move_platform2.cpp)
 add_executable(move_platform3 src/move_platform3.cpp)
+add_executable(move_platform4 src/move_platform4.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -152,6 +153,7 @@ add_dependencies(get_laser_vel ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 add_dependencies(move_platform ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(move_platform2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(move_platform3 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(move_platform4 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
@@ -168,6 +170,9 @@ target_link_libraries(move_platform2
    ${catkin_LIBRARIES}
 )
 target_link_libraries(move_platform3
+   ${catkin_LIBRARIES}
+)
+target_link_libraries(move_platform4
    ${catkin_LIBRARIES}
 )
 
